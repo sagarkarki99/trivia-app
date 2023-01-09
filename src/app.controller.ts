@@ -2,7 +2,7 @@ import { Controller, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { TriviaPool } from './game/trivia.pool';
 
-@Controller()
+@Controller('/')
 export class AppController {
   constructor(
     private readonly appService: AppService,
@@ -11,7 +11,10 @@ export class AppController {
 
   @Post('/create')
   async createGame() {
-    const gameId = await this.triviaPool.createNewGame({ id: 'sdf' });
+    const gameId = await this.triviaPool.createNewGame({
+      id: 'sdf',
+      connectionId: 'dfd',
+    });
     return {
       gameId: gameId,
     };
