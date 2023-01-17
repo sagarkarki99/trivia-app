@@ -9,6 +9,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { QuestionPayload, AnswerPayload } from 'src/game/game';
 import {
+  BroadcastEvent,
   GameEvent,
   NewAnswerEvent,
   QuestionAskedEvent,
@@ -43,6 +44,7 @@ export class GameGateway {
       id: userId,
     });
     client.emit('gameCreated', gameId);
+    return gameId;
   }
 
   @SubscribeMessage('joinGame')
@@ -51,11 +53,11 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
   ) {
     const connectionId = client.id;
-    this.gamePool.joinGame(input.gameId, {
+    const gameState = this.gamePool.joinGame(input.gameId, {
       connectionId: connectionId,
       id: input.gameId,
     });
-    client.emit('joined');
+    client.emit('joined', gameState);
   }
 
   @SubscribeMessage('askQuestion')
@@ -92,5 +94,19 @@ export class GameGateway {
       answeringUserId: payload.userId,
       ...payload.answer,
     });
+  }
+
+  @OnEvent(GameEvent.newUserJoined)
+  broadcastNewUserJoined(payload: BroadcastEvent) {
+    payload.users.forEach((user) =>
+      this.server.to(user.connectionId).emit('newUserJoined', payload.payload),
+    );
+  }
+
+  @OnEvent(GameEvent.leaveGame)
+  broadcastUserLeft(payload: BroadcastEvent) {
+    payload.users.forEach((user) =>
+      this.server.to(user.connectionId).emit('userLeft', payload.payload),
+    );
   }
 }

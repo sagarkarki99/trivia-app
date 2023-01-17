@@ -16,11 +16,11 @@ export class TriviaPool {
     return game.id;
   }
 
-  joinGame(gameId: string, user: ActiveUser) {
+  joinGame(gameId: string, user: ActiveUser): any {
     const game: TriviaGame = this.adminToGames[gameId];
     //here gameId is userId of admin
     if (game) {
-      game.joinGame(user);
+      return game.joinGame(user);
     } else {
       throw new GameException('Game does not exist.');
     }

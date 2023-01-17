@@ -32,18 +32,27 @@ export class TriviaGame {
 
   joinGame(user: ActiveUser) {
     this.users.push(user);
+    this.broadcastMessage(GameEvent.newUserJoined, { userId: user.id });
+    return {
+      connectedUsers: this.users,
+      admin: this.admin,
+    };
   }
 
   leaveGame(userId: string) {
-    //TODO:leaving game
+    this.users = this.users.filter((user) => user.id === userId);
+    this.broadcastMessage(GameEvent.leaveGame, { userId: userId });
     console.log(userId);
   }
 
-  private notifyAdmin(
-    event: GameEvent,
-    userId: string,
-    payload: AnswerPayload,
-  ) {
+  private broadcastMessage(event: GameEvent, payload: any) {
+    this.eventEmitter.emit(event, {
+      users: [this.admin, ...this.users],
+      payload: payload,
+    });
+  }
+
+  private notifyAdmin(event: GameEvent, userId: string, payload: any) {
     this.eventEmitter.emit(event, {
       userId: userId,
       admin: this.admin,
