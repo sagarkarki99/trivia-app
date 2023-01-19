@@ -8,15 +8,4 @@ export class AppController {
     private readonly appService: AppService,
     private readonly triviaPool: TriviaPool,
   ) {}
-
-  @Post('/create')
-  async createGame() {
-    const gameId = await this.triviaPool.createNewGame({
-      id: 'sdf',
-      connectionId: 'dfd',
-    });
-    return {
-      gameId: gameId,
-    };
-  }
 }

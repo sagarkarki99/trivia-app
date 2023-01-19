@@ -1,5 +1,5 @@
+import { Admin, ActiveUser } from 'src/entities/user';
 import { QuestionPayload, AnswerPayload } from './game';
-import { ActiveUser, Admin } from './trivia.pool';
 
 export enum GameEvent {
   questionAsked = 'questionAsked',

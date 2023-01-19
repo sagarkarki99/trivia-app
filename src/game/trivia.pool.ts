@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActiveUser, Admin } from 'src/entities/user';
 import { TriviaGame } from './game';
 
 @Injectable()
@@ -33,17 +34,6 @@ export class TriviaPool {
   finishGame(user: Admin) {
     this.adminToGames[user.id] = null;
   }
-}
-
-export type Admin = ActiveUser;
-
-export class User {
-  id: string;
-}
-
-export class ActiveUser {
-  id: string;
-  connectionId: string;
 }
 
 export class GameException extends Error {

@@ -6,8 +6,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { stringify } from 'querystring';
 import { Socket, Server } from 'socket.io';
-import { QuestionPayload, AnswerPayload } from 'src/game/game';
+import { ActiveUser, User } from 'src/entities/user';
 import {
   BroadcastEvent,
   GameEvent,
@@ -15,19 +16,9 @@ import {
   QuestionAskedEvent,
 } from 'src/game/game.events';
 import { TriviaPool } from 'src/game/trivia.pool';
-
-export class JoinGameInput {
-  gameId: string;
-}
-
-export class AskQuestionInput {
-  gameId: string;
-  questionPayload: QuestionPayload;
-}
-export class AnswerQuestionInput {
-  gameId: string;
-  answer: AnswerPayload;
-}
+import { JoinGameInput, AskQuestionInput, AnswerQuestionInput } from './inputs';
+import { instanceToPlain } from 'class-transformer';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway(3001)
 export class GameGateway {
@@ -37,11 +28,14 @@ export class GameGateway {
   server: Server;
 
   @SubscribeMessage('createGame')
-  handleCreateGame(@MessageBody() userId, @ConnectedSocket() client: Socket) {
+  handleCreateGame(
+    @MessageBody() user: User,
+    @ConnectedSocket() client: Socket,
+  ) {
     const connectionId = client.id;
     const gameId = this.gamePool.createNewGame({
       connectionId: connectionId,
-      id: userId,
+      ...user,
     });
     client.emit('gameCreated', gameId);
     return gameId;
@@ -53,30 +47,41 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
   ) {
     const connectionId = client.id;
-    const gameState = this.gamePool.joinGame(input.gameId, {
+    const activeUser: ActiveUser = {
       connectionId: connectionId,
-      id: input.gameId,
-    });
-    client.emit('joined', gameState);
+      id: input.user.id,
+      imageUrl: input.user.imageUrl,
+      name: input.user.name,
+    };
+    const gameState = this.gamePool.joinGame(input.gameId, activeUser);
+    const response = instanceToPlain(gameState);
+    Logger.log(response, 'JoinGame');
+    client.emit('joined', response);
   }
 
   @SubscribeMessage('askQuestion')
-  handleAskQuestion(@MessageBody() input: AskQuestionInput) {
+  handleAskQuestion(
+    @MessageBody() input: AskQuestionInput,
+    @ConnectedSocket() client: Socket,
+  ) {
     const game = this.gamePool.getGame(input.gameId);
     if (game) {
       game.askQuestion(input.gameId, input.questionPayload);
     } else {
-      //TODO: terminate this connection
+      client.disconnect();
     }
   }
 
   @SubscribeMessage('answerQuestion')
-  handleAnswerQuestion(@MessageBody() payload: AnswerQuestionInput) {
+  handleAnswerQuestion(
+    @MessageBody() payload: AnswerQuestionInput,
+    @ConnectedSocket() client: Socket,
+  ) {
     const game = this.gamePool.getGame(payload.gameId);
     if (game) {
       game.answer('ClientId', payload.answer);
     } else {
-      //TODO: terminate this connection with client.
+      client.disconnect(true);
     }
   }
 
@@ -99,7 +104,9 @@ export class GameGateway {
   @OnEvent(GameEvent.newUserJoined)
   broadcastNewUserJoined(payload: BroadcastEvent) {
     payload.users.forEach((user) =>
-      this.server.to(user.connectionId).emit('newUserJoined', payload.payload),
+      this.server
+        .to(user.connectionId)
+        .emit('newUserJoined', instanceToPlain(payload.payload)),
     );
   }
 

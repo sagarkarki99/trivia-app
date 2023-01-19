@@ -1,6 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActiveUser, Admin, User } from 'src/entities/user';
 import { GameEvent } from './game.events';
-import { ActiveUser, Admin } from './trivia.pool';
 
 export class TriviaGame {
   readonly id: string;
@@ -30,9 +30,13 @@ export class TriviaGame {
     console.log(payload.question);
   }
 
-  joinGame(user: ActiveUser) {
+  joinGame(user: ActiveUser): GameState {
     this.users.push(user);
-    this.broadcastMessage(GameEvent.newUserJoined, { userId: user.id });
+    this.broadcastMessage(GameEvent.newUserJoined, {
+      id: user.id,
+      name: user.name,
+      imageUrl: user.imageUrl,
+    });
     return {
       connectedUsers: this.users,
       admin: this.admin,
@@ -90,3 +94,8 @@ export class QuestionPayload {
   correctAnswer: string;
   totalSeconds: number;
 }
+
+export type GameState = {
+  connectedUsers: User[];
+  admin: User;
+};
