@@ -6,7 +6,6 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { stringify } from 'querystring';
 import { Socket, Server } from 'socket.io';
 import { ActiveUser, User } from 'src/entities/user';
 import {
@@ -79,7 +78,7 @@ export class GameGateway {
   ) {
     const game = this.gamePool.getGame(payload.gameId);
     if (game) {
-      game.answer('ClientId', payload.answer);
+      game.answer(payload.userId, payload.answer);
     } else {
       client.disconnect(true);
     }
@@ -88,17 +87,23 @@ export class GameGateway {
   @OnEvent(GameEvent.questionAsked)
   handleQuestionAsked(payload: QuestionAskedEvent) {
     console.log(payload);
+    const questionResponse = instanceToPlain(payload.question);
+    Logger.log(questionResponse, 'NewQuestion');
     payload.users.forEach((user) => {
-      this.server.to(user.connectionId).emit('questionAsked', payload.question);
+      this.server.to(user.connectionId).emit('questionAsked', questionResponse);
     });
   }
 
   @OnEvent(GameEvent.newAnswer)
   handleNewAnswer(payload: NewAnswerEvent) {
-    this.server.to(payload.admin.connectionId).emit('newAnswerSubmitted', {
-      answeringUserId: payload.userId,
-      ...payload.answer,
+    const answerResponse = instanceToPlain({
+      userId: payload.userId,
+      answer: payload.answer,
     });
+    Logger.log(answerResponse, 'NewAnswer');
+    this.server
+      .to(payload.admin.connectionId)
+      .emit('newAnswerSubmitted', answerResponse);
   }
 
   @OnEvent(GameEvent.newUserJoined)
