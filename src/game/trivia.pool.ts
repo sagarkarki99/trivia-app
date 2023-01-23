@@ -31,8 +31,12 @@ export class TriviaPool {
     return this.adminToGames[gameId];
   }
 
-  finishGame(user: Admin) {
-    this.adminToGames[user.id] = null;
+  finishGame(gameId: string) {
+    const game = this.adminToGames[gameId] as TriviaGame;
+    if (game) {
+      game.finish();
+    }
+    this.adminToGames[gameId] = null;
   }
 }
 

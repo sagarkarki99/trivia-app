@@ -49,6 +49,12 @@ export class TriviaGame {
     console.log(userId);
   }
 
+  finish() {
+    this.broadcastMessage(GameEvent.finish, {
+      message: 'Game is finished.',
+    });
+  }
+
   private broadcastMessage(event: GameEvent, payload: any) {
     this.eventEmitter.emit(event, {
       users: [this.admin, ...this.users],

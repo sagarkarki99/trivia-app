@@ -6,6 +6,7 @@ export enum GameEvent {
   newAnswer = 'newAnswer',
   leaveGame = 'leaveGame',
   newUserJoined = 'newUserJoined',
+  finish = 'finish',
 }
 
 export class QuestionAskedEvent {

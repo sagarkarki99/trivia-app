@@ -58,6 +58,11 @@ export class GameGateway {
     client.emit('joined', response);
   }
 
+  @SubscribeMessage('finishGame')
+  handleFinishGame(@MessageBody() gameId: string) {
+    this.gamePool.finishGame(gameId);
+  }
+
   @SubscribeMessage('askQuestion')
   handleAskQuestion(
     @MessageBody() input: AskQuestionInput,
@@ -112,6 +117,15 @@ export class GameGateway {
       this.server
         .to(user.connectionId)
         .emit('newUserJoined', instanceToPlain(payload.payload)),
+    );
+  }
+
+  @OnEvent(GameEvent.finish)
+  broadCastFinishGame(payload: BroadcastEvent) {
+    payload.users.forEach((user) =>
+      this.server
+        .to(user.connectionId)
+        .emit('gameFinished', instanceToPlain(payload.payload)),
     );
   }
 
