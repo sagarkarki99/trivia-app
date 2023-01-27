@@ -42,7 +42,7 @@ export class TriviaGame {
     }
     this.currentRound = new Round(payload, []);
 
-    this.notifyUsers(GameEvent.questionAsked, payload);
+    this.broadcastMessage(GameEvent.questionAsked, payload);
     console.log(payload.question);
   }
 
@@ -89,7 +89,7 @@ export class TriviaGame {
   private notifyUsers(event: GameEvent, payload: QuestionPayload) {
     this.eventEmitter.emit(event, {
       users: this.users,
-      question: payload,
+      payload: payload,
     });
     console.log(payload);
   }

@@ -93,7 +93,7 @@ export class GameGateway {
   @OnEvent(GameEvent.questionAsked)
   handleQuestionAsked(payload: QuestionAskedEvent) {
     console.log(payload);
-    const questionResponse = instanceToPlain(payload.question);
+    const questionResponse = instanceToPlain(payload.payload);
     Logger.log(questionResponse, 'NewQuestion');
     payload.users.forEach((user) => {
       this.server.to(user.connectionId).emit('questionAsked', questionResponse);

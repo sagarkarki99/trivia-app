@@ -10,9 +10,8 @@ export enum GameEvent {
 }
 
 export class QuestionAskedEvent {
-  admin: Admin;
   users: ActiveUser[];
-  question: QuestionPayload;
+  payload: QuestionPayload;
 }
 
 export class NewAnswerEvent {
