@@ -12,6 +12,5 @@ export class AskQuestionInput {
 }
 export class AnswerQuestionInput {
   gameId: string;
-  userId: string;
   answer: AnswerPayload;
 }

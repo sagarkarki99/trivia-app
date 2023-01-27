@@ -5,6 +5,9 @@ import { GameEvent } from './game.events';
 export class TriviaGame {
   readonly id: string;
   users: ActiveUser[] = [];
+  rounds: Round[] = [];
+  currentRound: Round;
+
   constructor(
     private readonly admin: Admin,
     private readonly eventEmitter: EventEmitter2,
@@ -12,19 +15,32 @@ export class TriviaGame {
     this.id = admin.id;
   }
 
-  answer(userId: string, payload: AnswerPayload) {
-    if (this.isAdmin(userId)) {
+  answer(connectionId: string, payload: AnswerPayload) {
+    const user = this.users.find((user) => user.connectionId == connectionId);
+    if (this.isAdmin(user.id)) {
       throw new Error('Admin cannot answer the question.');
     }
 
-    this.notifyAdmin(GameEvent.newAnswer, userId, payload);
-    console.log(payload.correctAnswer, userId);
+    const answer = {
+      userId: user.id,
+      timeTaken:
+        this.currentRound.question.totalSeconds - payload.remainingSeconds,
+      userAnswer: payload.userAnswer,
+    };
+    this.currentRound.answers.push(answer);
+
+    this.notifyAdmin(GameEvent.newAnswer, answer);
   }
 
-  askQuestion(userId: string, payload: QuestionPayload) {
-    if (this.isNotAdmin(userId)) {
+  askQuestion(connectionId: string, payload: QuestionPayload) {
+    if (this.isNotAdmin(connectionId)) {
       throw new Error('Only admin can post questions.');
     }
+
+    if (this.currentRound) {
+      this.rounds.push(this.currentRound);
+    }
+    this.currentRound = new Round(payload, []);
 
     this.notifyUsers(GameEvent.questionAsked, payload);
     console.log(payload.question);
@@ -38,6 +54,7 @@ export class TriviaGame {
       imageUrl: user.imageUrl,
     });
     return {
+      gameId: this.id,
       connectedUsers: this.users,
       admin: this.admin,
     };
@@ -62,13 +79,11 @@ export class TriviaGame {
     });
   }
 
-  private notifyAdmin(event: GameEvent, userId: string, payload: any) {
+  private notifyAdmin(event: GameEvent, payload: any) {
     this.eventEmitter.emit(event, {
-      userId: userId,
       admin: this.admin,
       answer: payload,
     });
-    console.log(userId, payload);
   }
 
   private notifyUsers(event: GameEvent, payload: QuestionPayload) {
@@ -83,13 +98,12 @@ export class TriviaGame {
     return !this.isNotAdmin(userId);
   }
 
-  private isNotAdmin(userId: string) {
-    return userId !== this.admin.id;
+  private isNotAdmin(connectionId: string) {
+    return connectionId !== this.admin.connectionId;
   }
 }
 
 export class AnswerPayload {
-  correctAnswer: string;
   userAnswer: string;
   remainingSeconds: number;
 }
@@ -102,6 +116,17 @@ export class QuestionPayload {
 }
 
 export type GameState = {
+  gameId: string;
   connectedUsers: User[];
   admin: User;
+};
+
+export class Round {
+  constructor(public question: QuestionPayload, public answers: Answer[]) {}
+}
+
+export type Answer = {
+  userId: string;
+  timeTaken: number;
+  userAnswer: string;
 };

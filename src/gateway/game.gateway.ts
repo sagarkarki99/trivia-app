@@ -37,6 +37,7 @@ export class GameGateway {
       ...user,
     });
     client.emit('gameCreated', gameId);
+    Logger.log(`Game created with ${gameId}`);
     return gameId;
   }
 
@@ -70,7 +71,7 @@ export class GameGateway {
   ) {
     const game = this.gamePool.getGame(input.gameId);
     if (game) {
-      game.askQuestion(input.gameId, input.questionPayload);
+      game.askQuestion(client.id, input.questionPayload);
     } else {
       client.disconnect();
     }
@@ -83,7 +84,7 @@ export class GameGateway {
   ) {
     const game = this.gamePool.getGame(payload.gameId);
     if (game) {
-      game.answer(payload.userId, payload.answer);
+      game.answer(client.id, payload.answer);
     } else {
       client.disconnect(true);
     }
@@ -102,8 +103,7 @@ export class GameGateway {
   @OnEvent(GameEvent.newAnswer)
   handleNewAnswer(payload: NewAnswerEvent) {
     const answerResponse = instanceToPlain({
-      userId: payload.userId,
-      answer: payload.answer,
+      ...payload.answer,
     });
     Logger.log(answerResponse, 'NewAnswer');
     this.server

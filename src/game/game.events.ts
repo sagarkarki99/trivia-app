@@ -1,5 +1,5 @@
 import { Admin, ActiveUser } from 'src/entities/user';
-import { QuestionPayload, AnswerPayload } from './game';
+import { QuestionPayload, Answer } from './game';
 
 export enum GameEvent {
   questionAsked = 'questionAsked',
@@ -17,8 +17,7 @@ export class QuestionAskedEvent {
 
 export class NewAnswerEvent {
   admin: Admin;
-  userId: string;
-  answer: AnswerPayload;
+  answer: Answer;
 }
 export class BroadcastEvent {
   users: ActiveUser[];
