@@ -21,6 +21,10 @@ export class TriviaGame {
       throw new Error('Admin cannot answer the question.');
     }
 
+    if (this.hasAlreadyAnswered(user)) {
+      throw new Error('User already answered the question.');
+    }
+
     const answer = {
       userId: user.id,
       timeTaken:
@@ -100,6 +104,12 @@ export class TriviaGame {
 
   private isNotAdmin(connectionId: string) {
     return connectionId !== this.admin.connectionId;
+  }
+
+  private hasAlreadyAnswered(user: ActiveUser) {
+    return this.currentRound.answers.some(
+      (answer, index, val) => answer.userId === user.id,
+    );
   }
 }
 
