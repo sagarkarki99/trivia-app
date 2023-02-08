@@ -34,7 +34,9 @@ export class TriviaPool {
   finishGame(gameId: string) {
     const game = this.adminToGames[gameId] as TriviaGame;
     if (game) {
-      game.finish();
+      game.finish(gameId);
+    } else {
+      throw new Error('game does not exist.');
     }
     this.adminToGames[gameId] = null;
   }

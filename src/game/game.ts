@@ -70,7 +70,10 @@ export class TriviaGame {
     console.log(userId);
   }
 
-  finish() {
+  finish(adminId: string) {
+    if (adminId !== this.admin.id) {
+      throw new Error('You do not have permission to finish the game.');
+    }
     this.broadcastMessage(GameEvent.finish, {
       message: 'Game is finished.',
     });
