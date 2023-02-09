@@ -9,10 +9,10 @@ import {
 import { Socket, Server } from 'socket.io';
 import { ActiveUser, User } from 'src/entities/user';
 import {
-  BroadcastEvent,
+  BroadcastResponseEvent,
   GameEvent,
-  NewAnswerEvent,
-  QuestionAskedEvent,
+  NewAnswerResponseEvent,
+  QuestionAskedResponseEvent,
 } from 'src/game/game.events';
 import { TriviaPool } from 'src/game/trivia.pool';
 import { JoinGameInput, AskQuestionInput, AnswerQuestionInput } from './inputs';
@@ -91,7 +91,7 @@ export class GameGateway {
   }
 
   @OnEvent(GameEvent.questionAsked)
-  handleQuestionAsked(payload: QuestionAskedEvent) {
+  handleQuestionAsked(payload: QuestionAskedResponseEvent) {
     console.log(payload);
     const questionResponse = instanceToPlain(payload.payload);
     Logger.log(questionResponse, 'NewQuestion');
@@ -101,7 +101,7 @@ export class GameGateway {
   }
 
   @OnEvent(GameEvent.newAnswer)
-  handleNewAnswer(payload: NewAnswerEvent) {
+  handleNewAnswer(payload: NewAnswerResponseEvent) {
     const answerResponse = instanceToPlain({
       ...payload.answer,
     });
@@ -112,7 +112,7 @@ export class GameGateway {
   }
 
   @OnEvent(GameEvent.newUserJoined)
-  broadcastNewUserJoined(payload: BroadcastEvent) {
+  broadcastNewUserJoined(payload: BroadcastResponseEvent) {
     payload.users.forEach((user) =>
       this.server
         .to(user.connectionId)
@@ -121,7 +121,7 @@ export class GameGateway {
   }
 
   @OnEvent(GameEvent.finish)
-  broadCastFinishGame(payload: BroadcastEvent) {
+  broadCastFinishGame(payload: BroadcastResponseEvent) {
     payload.users.forEach((user) =>
       this.server
         .to(user.connectionId)
@@ -130,7 +130,7 @@ export class GameGateway {
   }
 
   @OnEvent(GameEvent.leaveGame)
-  broadcastUserLeft(payload: BroadcastEvent) {
+  broadcastUserLeft(payload: BroadcastResponseEvent) {
     payload.users.forEach((user) =>
       this.server.to(user.connectionId).emit('userLeft', payload.payload),
     );

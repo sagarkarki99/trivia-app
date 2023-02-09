@@ -1,5 +1,6 @@
 import { Admin, ActiveUser } from 'src/entities/user';
-import { QuestionPayload, Answer } from './game';
+import { QuestionPayload } from 'src/gateway/inputs';
+import { Answer } from './game';
 
 export enum GameEvent {
   questionAsked = 'questionAsked',
@@ -9,16 +10,16 @@ export enum GameEvent {
   finish = 'finish',
 }
 
-export class QuestionAskedEvent {
+export class QuestionAskedResponseEvent {
   users: ActiveUser[];
   payload: QuestionPayload;
 }
 
-export class NewAnswerEvent {
+export class NewAnswerResponseEvent {
   admin: Admin;
   answer: Answer;
 }
-export class BroadcastEvent {
+export class BroadcastResponseEvent {
   users: ActiveUser[];
   payload: any;
 }

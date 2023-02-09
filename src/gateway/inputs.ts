@@ -1,5 +1,4 @@
 import { User } from 'src/entities/user';
-import { QuestionPayload, AnswerPayload } from 'src/game/game';
 
 export class JoinGameInput {
   gameId: string;
@@ -13,4 +12,16 @@ export class AskQuestionInput {
 export class AnswerQuestionInput {
   gameId: string;
   answer: AnswerPayload;
+}
+
+export class AnswerPayload {
+  userAnswer: string;
+  remainingSeconds: number;
+}
+
+export class QuestionPayload {
+  question: string;
+  answerOptions: string[];
+  correctAnswer: string;
+  totalSeconds: number;
 }

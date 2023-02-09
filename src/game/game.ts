@@ -1,5 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ActiveUser, Admin, User } from 'src/entities/user';
+import { AnswerPayload, QuestionPayload } from 'src/gateway/inputs';
 import { GameEvent } from './game.events';
 
 export class TriviaGame {
@@ -114,18 +115,6 @@ export class TriviaGame {
       (answer, index, val) => answer.userId === user.id,
     );
   }
-}
-
-export class AnswerPayload {
-  userAnswer: string;
-  remainingSeconds: number;
-}
-
-export class QuestionPayload {
-  question: string;
-  answerOptions: string[];
-  correctAnswer: string;
-  totalSeconds: number;
 }
 
 export type GameState = {
