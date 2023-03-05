@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { TriviaPool } from './game/trivia.pool';
 
@@ -8,4 +8,9 @@ export class AppController {
     private readonly appService: AppService,
     private readonly triviaPool: TriviaPool,
   ) {}
+
+  @Get('/')
+  healthCheck() {
+    return 'Hello from the app!';
+  }
 }
