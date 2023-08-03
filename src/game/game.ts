@@ -2,6 +2,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ActiveUser, Admin, User } from 'src/entities/user';
 import { AnswerPayload, QuestionPayload } from 'src/gateway/inputs';
 import { GameEvent } from './game.events';
+import { GameException } from './trivia.pool';
 
 export class TriviaGame {
   readonly id: string;
@@ -19,11 +20,17 @@ export class TriviaGame {
   answer(connectionId: string, payload: AnswerPayload) {
     const user = this.users.find((user) => user.connectionId == connectionId);
     if (this.isAdmin(user.id)) {
-      throw new Error('Admin cannot answer the question.');
+      throw new GameException(
+        'GAME_ERROR',
+        'Admin cannot answer the question.',
+      );
     }
 
     if (this.hasAlreadyAnswered(user)) {
-      throw new Error('User already answered the question.');
+      throw new GameException(
+        'GAME_ERROR',
+        'User already answered the question.',
+      );
     }
 
     const answer = {
@@ -39,7 +46,7 @@ export class TriviaGame {
 
   askQuestion(connectionId: string, payload: QuestionPayload) {
     if (this.isNotAdmin(connectionId)) {
-      throw new Error('Only admin can post questions.');
+      throw new GameException('GAME_ERROR', 'Only admin can post questions.');
     }
 
     if (this.currentRound) {
@@ -73,7 +80,10 @@ export class TriviaGame {
 
   finish(adminId: string) {
     if (adminId !== this.admin.id) {
-      throw new Error('You do not have permission to finish the game.');
+      throw new GameException(
+        'GAME_PERMISSION_ERROR',
+        'You do not have permission to finish the game.',
+      );
     }
     this.broadcastMessage(GameEvent.finish, {
       message: 'Game is finished.',
