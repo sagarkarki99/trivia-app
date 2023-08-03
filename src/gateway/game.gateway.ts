@@ -59,6 +59,18 @@ export class GameGateway {
     client.emit('joined', response);
   }
 
+  @SubscribeMessage('startGame')
+  handleStartGame(
+    @MessageBody() gameId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const game = this.gamePool.getGame(gameId);
+    game.users.forEach((user) =>
+      this.server.to(user.connectionId).emit('gameStarted', {}),
+    );
+    client.emit('gameStarted');
+  }
+
   @SubscribeMessage('finishGame')
   handleFinishGame(@MessageBody() gameId: string) {
     this.gamePool.finishGame(gameId);
