@@ -43,6 +43,7 @@ export class TriviaPool {
 }
 
 export class GameException extends Error {
-  title?: string;
-  message: string;
+  constructor(private title?: string, private description?: string) {
+    super(description);
+  }
 }
